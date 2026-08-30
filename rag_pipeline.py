@@ -1,4 +1,6 @@
 from pypdf import PdfReader
+from sentence_transformers import SentenceTransformer , util
+import chromadb
 
 #Function to extract all text from pdf
 def load_pdf (filepath):
@@ -19,7 +21,7 @@ def load_pdf (filepath):
 
     return text
 
-#Run function on pdf
+#Run load pdf function on pdf
 text = load_pdf("goldman_bdc_10k.pdf")
 
 #Function to chunk the text
@@ -48,7 +50,27 @@ def chunk_text(text, chunk_size=200, overlap=20):
     #Retun chunks
     return chunks
 
-#Run chunk_text on goldman pdf text and print total chunks and the first chunk
+#Run chunk function on pdf text
 chunks = chunk_text(text)
-print(len(chunks))
-print(chunks[0])
+
+#Initialize SentenceTransformer model
+model = SentenceTransformer('all-MiniLM-L6-v2')
+
+#embed chunks
+embeddings = model.encode(chunks)
+
+#Create a chromadb client
+client = chromadb.Client()
+
+#Create a collection in chromadb to hold the goldman embeddings
+collection = client.create_collection("goldman_bdc")
+
+#Add embedings to collection
+collection.add(
+    documents = chunks,
+    ids = [f"id{i}" for i in range(len(chunks))],
+    embeddings = embeddings.tolist()  
+)
+
+#Conformantion
+print("All chunks embedded and stored")
