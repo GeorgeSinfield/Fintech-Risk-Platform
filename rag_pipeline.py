@@ -3,6 +3,7 @@ from sentence_transformers import SentenceTransformer , util
 import chromadb
 import anthropic
 from dotenv import load_dotenv
+import json
 
 #Function to extract all text from pdf
 def load_pdf (filepath):
@@ -103,8 +104,28 @@ def ask(question):
     system="You are a financial risk analyst. Only state facts grounded in the provided text.",
     messages=[{"role": "user", "content": question + " use only this infomastion: \n" + relevent_info}])
 
-    #Print answer
-    print(message.content[0].text)
+    #Return answer
+    return message.content[0].text
 
-#Run ask function with a question
-ask("What are the main risks this company faces?")
+#Function that queries for each risk type and runs ask using the queried chunks
+def extract_risk_categories():
+
+    #Define risk_categories 
+    risk_categories = {"market_risk": "", "credit_risk": "", "regulatory_risk": "", "operational_risk": "", "liquidity_risk": ""}
+
+    #For each risk categorie run ask and save result then retun all results
+    for key in risk_categories:
+        result = ask(f"what deos this company say about {key}?")
+        risk_categories[key] = result
+
+    return(risk_categories)
+
+#Runs extract_risk_categories
+risk_data = extract_risk_categories()
+
+#Formats extract_risk_categories creates a json file for output 
+with open("goldman_bdc_risk.json", "w") as f:
+    f.write(json.dumps(risk_data, indent=2))
+
+#Conformation message 
+print("Risk categories saved to goldman_bdc_risk.json")
