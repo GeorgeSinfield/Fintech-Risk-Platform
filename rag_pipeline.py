@@ -1,6 +1,8 @@
 from pypdf import PdfReader
 from sentence_transformers import SentenceTransformer , util
 import chromadb
+import anthropic
+from dotenv import load_dotenv
 
 #Function to extract all text from pdf
 def load_pdf (filepath):
@@ -60,10 +62,10 @@ model = SentenceTransformer('all-MiniLM-L6-v2')
 embeddings = model.encode(chunks)
 
 #Create a chromadb client
-client = chromadb.Client()
+chromadb_client = chromadb.Client()
 
 #Create a collection in chromadb to hold the goldman embeddings
-collection = client.create_collection("goldman_bdc")
+collection = chromadb_client.create_collection("goldman_bdc")
 
 #Add embedings to collection
 collection.add(
@@ -74,3 +76,35 @@ collection.add(
 
 #Conformantion
 print("All chunks embedded and stored")
+
+#load dotenv
+load_dotenv()
+
+#Create a client for anthropic
+anthropic_client = anthropic.Anthropic()
+
+#Function to ask a question though anthropic api
+def ask(question):
+
+    #embed question
+    query_embeddings = model.encode(question)
+
+    #query collection with question
+    results = collection.query(query_embeddings = query_embeddings, n_results = 3)
+
+    #turn query results into text
+    relevent_info = "\n\n".join(results['documents'][0])
+
+    #ask question and feed relevent info
+    message = anthropic_client.messages.create(
+    model="claude-sonnet-4-6",
+    max_tokens=1024,
+    temperature=0.2,
+    system="You are a financial risk analyst. Only state facts grounded in the provided text.",
+    messages=[{"role": "user", "content": question + " use only this infomastion: \n" + relevent_info}])
+
+    #Print answer
+    print(message.content[0].text)
+
+#Run ask function with a question
+ask("What are the main risks this company faces?")
