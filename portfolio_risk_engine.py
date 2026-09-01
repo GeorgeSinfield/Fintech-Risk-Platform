@@ -56,11 +56,17 @@ def calculate_portfolio_var(returns, weights, confidence=0.95):
     #weighted portfolio returns for each day
     weighted_returns = returns.dot(weights)
 
+    #Reverse the confidence valule
+    percentile  = (1 - confidence) * 100
+
     #Finds var bassed of the weighted returns and confidence
-    result = np.percentile(weighted_returns, confidence)
+    result = np.percentile(weighted_returns, percentile)
 
     #returns the var
     return result
+
+#Run and store calculate_portfolio_var
+portfolio_var = calculate_portfolio_var(returns, [0.4, 0.3, 0.3],)
 
 #Function that calculates the max drawdown
 def calculate_max_drawdown(prices):
@@ -77,4 +83,17 @@ def calculate_max_drawdown(prices):
     #Returns worst drawdown
     return worst_drawdown
 
-print(calculate_max_drawdown(prices))
+#Run and store calculate_max_drawdown
+worst_drawdown = calculate_max_drawdown(prices)
+
+#Print all fuunctions
+print(" RETURNS ")
+print(returns.head())
+print("\n VOLATILITY ")
+print(volatility)
+print("\n CORRELATION MATRIX ")
+print(correlation_matrix)
+print("\n VAR ")
+print(portfolio_var)
+print("\n WORST DRAWDOWN ")
+print(worst_drawdown)
