@@ -49,3 +49,15 @@ def calculate_correlation_matrix(returns):
 
 #Run and store correlation matrix
 correlation_matrix = calculate_correlation_matrix(returns)
+
+#Function that calcukates the historical VaR
+def calculate_portfolio_var(returns, weights, confidence=0.95):
+
+    #weighted portfolio returns for each day
+    weighted_returns = returns.dot(weights)
+
+    #Finds var bassed of the weighted returns and confidence
+    result = np.percentile(weighted_returns, confidence)
+
+    #returns the var
+    return result
