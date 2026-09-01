@@ -86,8 +86,8 @@ def run_risk_analysis(tickers: list[str], weights: list[float]):
     }
 
 #Test
-result = run_risk_analysis(["AAPL", "JPM", "XOM"], [0.4, 0.3, 0.3])
-print("Volatility:\n", result["volatility"])
-print("\nCorrelation:\n", result["correlation_matrix"])
-print("\nVaR:\n", result["portfolio_var"])
-print("\nMax Drawdown:\n", result["max_drawdown"])
+#result = run_risk_analysis(["AAPL", "JPM", "XOM"], [0.4, 0.3, 0.3])
+#print("Volatility:\n", result["volatility"])
+#print("\nCorrelation:\n", result["correlation_matrix"])
+#print("\nVaR:\n", result["portfolio_var"])
+#print("\nMax Drawdown:\n", result["max_drawdown"])
