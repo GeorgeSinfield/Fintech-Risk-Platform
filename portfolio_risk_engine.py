@@ -17,8 +17,24 @@ def calculate_returns(prices):
     #Remives any NaN rows
     result = pct_change.dropna()
 
-    #Returns result
+    #Returns the returns
     return result
 
-#Runs calculate_returns on prices
+#Runs calculate_returns on prices and stores it
 returns = calculate_returns(prices)
+
+#Function that calculates the volatility of returns 
+def calculate_volatility(returns):
+
+    #Calculate standard deviation for each column
+    returns_std = returns.std()
+
+    #Muultplys the standard deviation by square root of 252 to br the volatility
+    result = returns_std * np.sqrt(252)
+
+    #Retuns the volatility
+    return result
+
+#Runs calculate_volatility on returns and stores it
+volatility = calculate_volatility(returns)
+print(volatility)
