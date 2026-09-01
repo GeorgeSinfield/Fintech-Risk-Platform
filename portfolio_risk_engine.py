@@ -50,7 +50,7 @@ def calculate_correlation_matrix(returns):
 #Run and store correlation matrix
 correlation_matrix = calculate_correlation_matrix(returns)
 
-#Function that calcukates the historical VaR
+#Function that calculates the historical VaR
 def calculate_portfolio_var(returns, weights, confidence=0.95):
 
     #weighted portfolio returns for each day
@@ -61,3 +61,20 @@ def calculate_portfolio_var(returns, weights, confidence=0.95):
 
     #returns the var
     return result
+
+#Function that calculates the max drawdown
+def calculate_max_drawdown(prices):
+
+    #Finds the maximum price
+    max_price = prices.cummax()
+
+    #Calculates diffrence of current price with max price
+    current_dif = (prices - max_price) / max_price
+
+    #Finds the minimun value across all days
+    worst_drawdown = current_dif.min()
+
+    #Returns worst drawdown
+    return worst_drawdown
+
+print(calculate_max_drawdown(prices))
