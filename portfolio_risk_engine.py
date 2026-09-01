@@ -29,7 +29,7 @@ def calculate_volatility(returns):
     #Calculate standard deviation for each column
     returns_std = returns.std()
 
-    #Muultplys the standard deviation by square root of 252 to br the volatility
+    #Multiply the standard deviation by square root of 252 to br the volatility
     result = returns_std * np.sqrt(252)
 
     #Retuns the volatility
@@ -37,4 +37,15 @@ def calculate_volatility(returns):
 
 #Runs calculate_volatility on returns and stores it
 volatility = calculate_volatility(returns)
-print(volatility)
+
+#Function to calculate correlation matrix
+def calculate_correlation_matrix(returns):
+
+    #Calculate correlation matrix using pandas .corr()
+    result = returns.corr()
+
+    #Return correlation matrix
+    return result
+
+#Run and store correlation matrix
+correlation_matrix = calculate_correlation_matrix(returns)
