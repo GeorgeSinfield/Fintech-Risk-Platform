@@ -106,5 +106,18 @@ def check_news_for_risk(ticker):
                 #return claude's response 
                 return final_message.content[0].text
 
+#Function to call check news for risk on multiple tickers at the same time  
+def analyse_portfolio_news(tickers):
+
+    #Defines result variable 
+    result = {}
+
+    #loop that calls check_news_for_risk on each ticker
+    for i in tickers:
+        result[i] = check_news_for_risk(i)
+
+    #Returns analysis
+    return result
+
 #Test
-print(check_news_for_risk("AAPL"))
+print(analyse_portfolio_news(["AAPL", "JPM", "XOM"]))
