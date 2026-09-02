@@ -42,9 +42,9 @@ def get_news(ticker):
     #Returns list
     return clean_news
 
-print(get_news("AAPL"))
-
+#List of tools
 tools = [
+    #get_news tool
     {"name": "get_news",
      "description": "A function takes a string [ticker] parameter, gets the 5 most recent news articles about that ticker, and returns the title and summary of those articles.",
      "input_schema": {
@@ -59,3 +59,52 @@ tools = [
         }
     }
     ]
+
+#Function that checks news about ticker for risk
+def check_news_for_risk(ticker):
+
+    #Initial message to Claude with tools list
+    message = client.messages.create(
+        model="claude-sonnet-4-6",
+        max_tokens=1024,
+        temperature=0.2,
+        system="You are a financial risk analyst. Only state facts grounded in the provided text.",
+        tools=tools,
+        messages=[
+            {"role": "user","content": f"Check the latest news for {ticker} and identify any items that could represent a risk to an investor holding this stock."}
+            ],
+    )
+
+    #Check is claude stopped because it wants to use a tool
+    if message.stop_reason == "tool_use":
+        #Finds where claude wants to use tool
+        for i in message.content:
+            if i.type == "tool_use":
+                #Runs tool with the argument claude wants to use
+                run_tool = get_news(i.input["ticker"])
+
+                #Sends the results back to claude
+                final_message = client.messages.create(
+                    model="claude-sonnet-4-6",
+                    max_tokens=1024,
+                    temperature=0.2,
+                    tools=tools,
+                    system="You are a financial risk analyst. Only state facts grounded in the provided text.",
+                    messages=[
+                        {"role": "user", "content":  f"Check the latest news for {ticker} and identify any items that could represent a risk to an investor holding this stock."},
+                        {"role": "assistant", "content": message.content},
+                        {"role": "user", "content": [
+                            {
+                                "type": "tool_result",
+                                "tool_use_id": i.id,
+                                "content": str(run_tool)
+                            }
+                        ]}
+                    ]
+                )
+
+                #return claude's response 
+                return final_message.content[0].text
+
+#Test
+print(check_news_for_risk("AAPL"))
