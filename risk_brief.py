@@ -40,4 +40,5 @@ def generate_risk_brief(tickers, weights):
     return message.content[0].text
 
 #Test
-print(generate_risk_brief(["AAPL", "JPM", "XOM"], [0.4,0.3,0.3]))
+if __name__ == "__main__":
+    print(generate_risk_brief(["AAPL", "JPM", "XOM"], [0.4,0.3,0.3]))

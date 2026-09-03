@@ -120,4 +120,5 @@ def analyse_portfolio_news(tickers):
     return result
 
 #Test
-print(analyse_portfolio_news(["AAPL", "JPM", "XOM"]))
+if __name__ == "__main__":
+    print(analyse_portfolio_news(["AAPL", "JPM", "XOM"]))

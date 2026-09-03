@@ -17,7 +17,7 @@ def load_pdf (filepath):
     #Define text string
     text = ""
 
-    #Loops through every page and extracs the text
+    #Loops through every page and extracts the text
     for i in range(num_pages):
         page = reader.pages[i]
         text += page.extract_text()
@@ -39,18 +39,18 @@ def chunk_text(text, chunk_size=200, overlap=20):
     #Create list where chunks can be stored
     chunks = []
 
-    #Create step varible
+    #Create step variable
     step = chunk_size - overlap
 
-    #Create start varible
+    #Create start variable
     start = 0
 
-    #Loop though words adding them to a chunk which will then be stoerd in chiunks
+    #Loop though words adding them to a chunk which will then be stored in chunks
     while start < total_words:
         chunks.append(" ".join(words[start:start + chunk_size]))
         start += step
 
-    #Retun chunks
+    #Return chunks
     return chunks
 
 #Run chunk function on pdf text
@@ -68,14 +68,14 @@ chromadb_client = chromadb.Client()
 #Create a collection in chromadb to hold the goldman embeddings
 collection = chromadb_client.create_collection("goldman_bdc")
 
-#Add embedings to collection
+#Add embeddings to collection
 collection.add(
     documents = chunks,
     ids = [f"id{i}" for i in range(len(chunks))],
     embeddings = embeddings.tolist()  
 )
 
-#Conformantion
+#Conformation
 print("All chunks embedded and stored")
 
 #load dotenv
@@ -94,15 +94,15 @@ def ask(question):
     results = collection.query(query_embeddings = query_embeddings, n_results = 3)
 
     #turn query results into text
-    relevent_info = "\n\n".join(results['documents'][0])
+    relevant_info = "\n\n".join(results['documents'][0])
 
-    #ask question and feed relevent info
+    #ask question and feed relevant info
     message = anthropic_client.messages.create(
     model="claude-sonnet-4-6",
     max_tokens=1024,
     temperature=0.2,
     system="You are a financial risk analyst. Only state facts grounded in the provided text.",
-    messages=[{"role": "user", "content": question + " use only this infomastion: \n" + relevent_info}])
+    messages=[{"role": "user", "content": question + " use only this information: \n" + relevant_info}])
 
     #Return answer
     return message.content[0].text
@@ -113,9 +113,9 @@ def extract_risk_categories():
     #Define risk_categories 
     risk_categories = {"market_risk": "", "credit_risk": "", "regulatory_risk": "", "operational_risk": "", "liquidity_risk": ""}
 
-    #For each risk categorie run ask and save result then retun all results
+    #For each risk category run ask and save result then return all results
     for key in risk_categories:
-        result = ask(f"what deos this company say about {key}?")
+        result = ask(f"what does this company say about {key}?")
         risk_categories[key] = result
 
     return(risk_categories)
@@ -127,5 +127,6 @@ risk_data = extract_risk_categories()
 with open("goldman_bdc_risk.json", "w") as f:
     f.write(json.dumps(risk_data, indent=2))
 
-#Conformation message 
-print("Risk categories saved to goldman_bdc_risk.json")
+#Conformation message
+if __name__ == "__main__": 
+    print("Risk categories saved to goldman_bdc_risk.json")
