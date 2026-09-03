@@ -5,6 +5,18 @@ import anthropic
 from dotenv import load_dotenv
 import json
 
+#load dotenv
+load_dotenv()
+
+#Initialize SentenceTransformer model
+model = SentenceTransformer('all-MiniLM-L6-v2')
+
+#Create a chromadb client
+chromadb_client = chromadb.PersistentClient(path="./chroma_db")
+
+#Create a client for anthropic
+anthropic_client = anthropic.Anthropic()
+
 #Function to extract all text from pdf
 def load_pdf (filepath):
 
@@ -23,9 +35,6 @@ def load_pdf (filepath):
         text += page.extract_text()
 
     return text
-
-#Run load pdf function on pdf
-text = load_pdf("goldman_bdc_10k.pdf")
 
 #Function to chunk the text
 def chunk_text(text, chunk_size=200, overlap=20):
@@ -53,39 +62,33 @@ def chunk_text(text, chunk_size=200, overlap=20):
     #Return chunks
     return chunks
 
-#Run chunk function on pdf text
-chunks = chunk_text(text)
+#Function that process pdf by using load_pdf and chunk_text
+def process_pdf(filepath, collection_name):
 
-#Initialize SentenceTransformer model
-model = SentenceTransformer('all-MiniLM-L6-v2')
+    #Runs load_pdf on file
+    text = load_pdf(filepath)
 
-#embed chunks
-embeddings = model.encode(chunks)
+    #Chunks the text
+    chunks = chunk_text(text, chunk_size=200, overlap=20)
 
-#Create a chromadb client
-chromadb_client = chromadb.Client()
+    #Embeds the chunks
+    embeddings = model.encode(chunks)
 
-#Create a collection in chromadb to hold the goldman embeddings
-collection = chromadb_client.create_collection("goldman_bdc")
+    #Creates collection
+    collection = chromadb_client.get_or_create_collection(collection_name)
 
-#Add embeddings to collection
-collection.add(
-    documents = chunks,
-    ids = [f"id{i}" for i in range(len(chunks))],
-    embeddings = embeddings.tolist()  
-)
+    #Adds chunks and embeddings to collection 
+    collection.add(
+            documents = chunks,
+            ids = [f"id{i}" for i in range(len(chunks))],
+            embeddings = embeddings.tolist()  
+        )
 
-#Conformation
-print("All chunks embedded and stored")
-
-#load dotenv
-load_dotenv()
-
-#Create a client for anthropic
-anthropic_client = anthropic.Anthropic()
+    #Returns collection 
+    return collection
 
 #Function to ask a question though anthropic api
-def ask(question):
+def ask(question, collection):
 
     #embed question
     query_embeddings = model.encode(question)
@@ -108,25 +111,30 @@ def ask(question):
     return message.content[0].text
 
 #Function that queries for each risk type and runs ask using the queried chunks
-def extract_risk_categories():
+def extract_risk_categories(collection):
 
     #Define risk_categories 
     risk_categories = {"market_risk": "", "credit_risk": "", "regulatory_risk": "", "operational_risk": "", "liquidity_risk": ""}
 
     #For each risk category run ask and save result then return all results
     for key in risk_categories:
-        result = ask(f"what does this company say about {key}?")
+        result = ask(f"what does this company say about {key}?", collection)
         risk_categories[key] = result
 
     return(risk_categories)
 
-#Runs extract_risk_categories
-risk_data = extract_risk_categories()
-
-#Formats extract_risk_categories creates a json file for output 
-with open("goldman_bdc_risk.json", "w") as f:
-    f.write(json.dumps(risk_data, indent=2))
-
-#Conformation message
+#Test
 if __name__ == "__main__": 
+
+    #Runs and stores process_pdf
+    collection = process_pdf("goldman_bdc_10k.pdf", "goldman_bdc")
+
+    #Runs and stores extract_risk_categories
+    risk_data = extract_risk_categories(collection)
+
+    #Formats extract_risk_categories creates a json file for output 
+    with open("goldman_bdc_risk.json", "w") as f:
+        f.write(json.dumps(risk_data, indent=2))
+
+    #Print test
     print("Risk categories saved to goldman_bdc_risk.json")
