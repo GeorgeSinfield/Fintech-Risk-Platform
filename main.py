@@ -4,9 +4,18 @@ from risk_brief import generate_risk_brief
 import shutil
 from rag_pipeline import process_pdf, extract_risk_categories
 import yfinance as yf
+from fastapi.middleware.cors import CORSMiddleware
 
 #Create a FastAPI instance
 app = FastAPI()
+
+#Enable CORS to access frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 #Class to define request model 
 class PortfolioRequest(BaseModel):
