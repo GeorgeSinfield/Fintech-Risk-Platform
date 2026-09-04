@@ -3,6 +3,7 @@ from pydantic import BaseModel
 from risk_brief import generate_risk_brief
 import shutil
 from rag_pipeline import process_pdf, extract_risk_categories
+import yfinance as yf
 
 #Create a FastAPI instance
 app = FastAPI()
@@ -44,3 +45,14 @@ async def upload_10k(company_name: str, file: UploadFile = File(...)):
     #Returns risk_categories
     return risk_categories
 
+#GET endpoint at /search-ticker
+@app.get("/search-ticker")
+
+#Function that takes search string and returns ticker matching with matching company names
+def search_ticker(query: str):
+
+    #Runs search of query and stores it 
+    result = yf.Search(query)
+
+    #Returns result in a list companies and their tickers
+    return result.quotes
