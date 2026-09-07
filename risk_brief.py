@@ -36,8 +36,16 @@ def generate_risk_brief(tickers, weights):
              f"Write a 4-paragraph risk brief for a portfolio manager covering:\n1. Overall risk level\n2. Main risk drivers\n3. Key news events to watch\n4. One actionable recommendation"}]
     )
 
-    #Return response from claude
-    return message.content[0].text
+    #Return response from claude & Risk metrics
+    return {
+        "brief": message.content[0].text,
+        "metrics": {
+            "volatility": risk_data['volatility'].to_dict(),
+            "correlation_matrix": risk_data['correlation_matrix'].to_dict(),
+            "portfolio_var": round(float(risk_data['portfolio_var']), 4),
+            "max_drawdown": risk_data['max_drawdown'].to_dict()
+        }
+    }
 
 #Test
 if __name__ == "__main__":
