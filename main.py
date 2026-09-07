@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, UploadFile, Form
 from pydantic import BaseModel
 from risk_brief import generate_risk_brief
 import shutil
@@ -38,15 +38,18 @@ def run_risk_brief(request: PortfolioRequest):
 @app.post("/upload-10k")
 
 #Function that takes a file saves it then process it then runs extract_risk_categories on it and returns the risk_categories
-async def upload_10k(company_name: str, file: UploadFile = File(...)):
+async def upload_10k(company_name: str = Form(...), file: UploadFile = File(...)):
 
     # save uploaded file temporarily
     temp_path = f"temp_{file.filename}"
     with open(temp_path, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
 
+    #Removes spaces from company name
+    clean_name = company_name.lower().replace(" ", "_")
+
     #Runs and Stores process_pdf
-    collection = process_pdf(temp_path, company_name)
+    collection = process_pdf(temp_path, clean_name)
 
     #Runs and stores extract_risk_categories
     risk_categories = extract_risk_categories(collection)
