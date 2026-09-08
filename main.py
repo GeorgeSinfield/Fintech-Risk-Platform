@@ -2,7 +2,7 @@ from fastapi import FastAPI, File, UploadFile, Form
 from pydantic import BaseModel
 from risk_brief import generate_risk_brief
 import shutil
-from rag_pipeline import process_pdf, extract_risk_categories
+from rag_pipeline import process_pdf, extract_risk_categories, ask, chromadb_client
 import yfinance as yf
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -68,3 +68,23 @@ def search_ticker(query: str):
 
     #Returns result in a list companies and their tickers
     return result.quotes
+
+#Class to define AskRequest model
+class AskRequest(BaseModel):
+    question: str
+    collection_name: str
+
+#POST Endpoint at /ask
+@app.post("/ask")
+
+#Function that that takes request and runs ask on rewuest as a question 
+def ask_question(request: AskRequest):
+
+    #Gets existing ChromaDB collection for company if it exsites instead of making a new one
+    collection = chromadb_client.get_or_create_collection(request.collection_name)
+
+    #Runs and stores ask
+    answer = ask(request.question, collection)
+
+    #Returns answer form Claude API
+    return {"answer": answer}
