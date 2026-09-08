@@ -77,10 +77,10 @@ class AskRequest(BaseModel):
 #POST Endpoint at /ask
 @app.post("/ask")
 
-#Function that that takes request and runs ask on rewuest as a question 
+#Function that that takes request and runs ask on request as a question 
 def ask_question(request: AskRequest):
 
-    #Gets existing ChromaDB collection for company if it exsites instead of making a new one
+    #Gets existing ChromaDB collection for company if it exists instead of making a new one
     collection = chromadb_client.get_or_create_collection(request.collection_name)
 
     #Runs and stores ask
