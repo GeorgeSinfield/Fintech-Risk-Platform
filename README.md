@@ -63,6 +63,6 @@ Overall I have learnt a lot. Practically I have learnt about building and deploy
 3. pip install -r requirements.txt
 4. uvicorn main:app --reload
 
-## Video
+## 🎥Video
 
 In progress...
